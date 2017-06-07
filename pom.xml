@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ngs.stash.externalhooks</groupId>
     <artifactId>external-hooks</artifactId>
-    <version>3.3-1</version>
+    <version>3.3-3-SNAPSHOT</version>
     <organization>
         <name>NGS</name>
         <url>http://ngs.ru/</url>
@@ -36,11 +36,6 @@
             <version>${bitbucket.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--    <groupId>javax.servlet</groupId>-->
-        <!--    <artifactId>javax.servlet-api</artifactId>-->
-        <!--    <scope>provided</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -59,11 +54,6 @@
             <version>2.6</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--    <groupId>com.google.guava</groupId>-->
-        <!--    <artifactId>guava</artifactId>-->
-        <!--    <scope>provided</scope>-->
-        <!--</dependency>-->
     </dependencies>
     <build>
         <plugins>
@@ -101,4 +91,20 @@
         <amps.version>6.2.9</amps.version>
         <plugin.testrunner.version>1.1.4</plugin.testrunner.version>
     </properties>
+    <scm>
+        <connection>scm:git:https://github.com/seletskiy/atlassian-external-hooks</connection>
+        <developerConnection>scm:git:https://github.com/seletskiy/atlassian-external-hooks</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/seletskiy/atlassian-external-hooks</url>
+    </scm>
+    <distributionManagement>
+        <downloadUrl>http://gith.com/seletskiy/atlassian-external-hooks</downloadUrl>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>seletskiy</id>
+            <name>seletskiy's GitHub Repo</name>
+            <url>https://github.com/seletskiy/atlassian-external-hooks</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
 </project>
