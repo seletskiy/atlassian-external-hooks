@@ -91,6 +91,7 @@ public class ExternalMergeCheckHook
 
         // Using the same env variables as
         // https://github.com/tomasbjerre/pull-request-notifier-for-bitbucket
+        env.put("STASH_IS_DRY_RUN", context.getMergeRequest().isDryRun() ? "1" : "0");
         env.put("PULL_REQUEST_FROM_HASH", pr.getFromRef().getLatestCommit());
         env.put("PULL_REQUEST_FROM_ID", pr.getFromRef().getId());
         env.put("PULL_REQUEST_FROM_BRANCH", pr.getFromRef().getDisplayId());
