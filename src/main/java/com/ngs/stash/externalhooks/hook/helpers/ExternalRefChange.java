@@ -27,6 +27,12 @@ public class ExternalRefChange implements RefChange {
 
     @Nonnull
     @Override
+    public String getRefId() {
+        return ref.getId();
+    }
+
+    @Nonnull
+    @Override
     public String getFromHash() {
         return fromHash;
     }

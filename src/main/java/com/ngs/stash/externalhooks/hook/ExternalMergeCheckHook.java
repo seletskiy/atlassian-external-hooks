@@ -3,6 +3,7 @@ package com.ngs.stash.externalhooks.hook;
 import com.atlassian.bitbucket.hook.*;
 import com.atlassian.bitbucket.hook.repository.*;
 import com.atlassian.bitbucket.repository.*;
+import com.atlassian.bitbucket.scm.ScmService;
 import com.atlassian.bitbucket.setting.*;
 import com.atlassian.bitbucket.user.*;
 import com.atlassian.bitbucket.auth.*;
@@ -46,17 +47,20 @@ public class ExternalMergeCheckHook
     private PermissionService permissions;
     private RepositoryService repoService;
     private ApplicationPropertiesService properties;
+    private ScmService scmService;
 
     public ExternalMergeCheckHook(
         AuthenticationContext authenticationContext,
         PermissionService permissions,
         RepositoryService repoService,
-        ApplicationPropertiesService properties
+        ApplicationPropertiesService properties,
+        ScmService scmService
     ) {
         this.authCtx = authenticationContext;
         this.permissions = permissions;
         this.repoService = repoService;
         this.properties = properties;
+        this.scmService = scmService;
     }
 
     /**
@@ -159,7 +163,7 @@ public class ExternalMergeCheckHook
         Repository repo, String repoPath, List<String> exe, Settings settings
     ) {
         ExternalPreReceiveHook impl = new ExternalPreReceiveHook(this.authCtx,
-            this.permissions, this.repoService, this.properties);
+            this.permissions, this.repoService, this.properties, this.scmService);
         return impl.createProcessBuilder(repo, repoPath, exe, settings);
     }
 
@@ -169,7 +173,7 @@ public class ExternalMergeCheckHook
         HookResponse hookResponse
     ) throws InterruptedException, IOException {
         ExternalPreReceiveHook impl = new ExternalPreReceiveHook(this.authCtx,
-            this.permissions, this.repoService, this.properties);
+            this.permissions, this.repoService, this.properties, this.scmService);
         return impl.runExternalHooks(pb, refChanges, hookResponse);
     }
 
@@ -180,7 +184,7 @@ public class ExternalMergeCheckHook
         Repository repository
     ) {
         ExternalPreReceiveHook impl = new ExternalPreReceiveHook(this.authCtx,
-            this.permissions, this.repoService, this.properties);
+            this.permissions, this.repoService, this.properties, this.scmService);
         impl.validate(settings, errors, repository);
     }
 

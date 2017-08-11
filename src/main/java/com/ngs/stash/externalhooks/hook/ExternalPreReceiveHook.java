@@ -3,15 +3,22 @@ package com.ngs.stash.externalhooks.hook;
 import com.atlassian.bitbucket.hook.*;
 import com.atlassian.bitbucket.hook.repository.*;
 import com.atlassian.bitbucket.repository.*;
+import com.atlassian.bitbucket.scm.BaseCommand;
+import com.atlassian.bitbucket.scm.Command;
+import com.atlassian.bitbucket.scm.CommandOutputHandler;
+import com.atlassian.bitbucket.scm.ScmService;
 import com.atlassian.bitbucket.setting.*;
 import com.atlassian.bitbucket.user.*;
 import com.atlassian.bitbucket.auth.*;
 import com.atlassian.bitbucket.permission.*;
 import com.atlassian.bitbucket.server.*;
 import com.atlassian.bitbucket.util.*;
+import com.atlassian.utils.process.ProcessException;
+import com.atlassian.utils.process.Watchdog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import org.apache.commons.io.FilenameUtils;
 import java.io.*;
@@ -32,17 +39,31 @@ public class ExternalPreReceiveHook
     private PermissionService permissions;
     private RepositoryService repoService;
     private ApplicationPropertiesService properties;
+    private ScmService scmService;
 
     public ExternalPreReceiveHook(
         AuthenticationContext authenticationContext,
         PermissionService permissions,
         RepositoryService repoService,
-        ApplicationPropertiesService properties
+        ApplicationPropertiesService properties,
+        ScmService scmService
     ) {
         this.authCtx = authenticationContext;
         this.permissions = permissions;
         this.repoService = repoService;
         this.properties = properties;
+        this.scmService = scmService;
+    }
+
+    private static Field baseCommandEnvironmentField;
+
+    static {
+        try {
+            baseCommandEnvironmentField = BaseCommand.class.getDeclaredField("environment");
+            baseCommandEnvironmentField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            baseCommandEnvironmentField = null;
+        }
     }
 
     /**
@@ -75,6 +96,39 @@ public class ExternalPreReceiveHook
         }
     }
 
+    private static class NullCommandOutputHandler implements CommandOutputHandler {
+
+        @Override
+        public Object getOutput() { return null; }
+
+        @Override
+        public void process(InputStream inputStream) throws ProcessException { }
+
+        @Override
+        public void complete() throws ProcessException { }
+
+        @Override
+        public void setWatchdog(Watchdog watchdog) { }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getScmEnvironment(final Repository repository) {
+
+        final Command<?> command = scmService.createBuilder(repository)
+                .command("rev-list").build(new NullCommandOutputHandler());
+
+        try {
+
+            if (command instanceof BaseCommand) {
+                return (Map) baseCommandEnvironmentField.get(command);
+            }
+
+        } catch (IllegalAccessException e) { }
+
+        return null;
+    }
+
     public ProcessBuilder createProcessBuilder(
         Repository repo, String repoPath, List<String> exe, Settings settings
     ) {
@@ -92,6 +146,12 @@ public class ExternalPreReceiveHook
         ProcessBuilder pb = new ProcessBuilder(exe);
 
         Map<String, String> env = pb.environment();
+
+        final Map<String, String> scmEnvironment = getScmEnvironment(repo);
+        if (scmEnvironment != null) {
+            env.putAll(scmEnvironment);
+        }
+
         env.put("STASH_USER_NAME", currentUser.getName());
         if (currentUser.getEmailAddress() != null) {
             env.put("STASH_USER_EMAIL", currentUser.getEmailAddress());
