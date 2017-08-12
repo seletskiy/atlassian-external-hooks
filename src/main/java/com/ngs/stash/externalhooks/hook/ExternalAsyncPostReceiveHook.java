@@ -2,6 +2,7 @@ package com.ngs.stash.externalhooks.hook;
 
 import com.atlassian.bitbucket.hook.repository.*;
 import com.atlassian.bitbucket.repository.*;
+import com.atlassian.bitbucket.scm.ScmService;
 import com.atlassian.bitbucket.setting.*;
 import com.atlassian.bitbucket.user.*;
 import com.atlassian.bitbucket.auth.*;
@@ -23,17 +24,20 @@ public class ExternalAsyncPostReceiveHook
     private PermissionService permissions;
     private RepositoryService repoService;
     private ApplicationPropertiesService properties;
+    private ScmService scmService;
 
     public ExternalAsyncPostReceiveHook(
         AuthenticationContext authenticationContext,
         PermissionService permissions,
         RepositoryService repoService,
-        ApplicationPropertiesService properties
+        ApplicationPropertiesService properties,
+        ScmService scmService
     ) {
         this.authCtx = authenticationContext;
         this.permissions = permissions;
         this.repoService = repoService;
         this.properties = properties;
+        this.scmService = scmService;
     }
 
     @Override
@@ -42,7 +46,7 @@ public class ExternalAsyncPostReceiveHook
         Collection<RefChange> refChanges
     ) {
         ExternalPreReceiveHook impl = new ExternalPreReceiveHook(
-            this.authCtx, this.permissions, this.repoService, this.properties);
+            this.authCtx, this.permissions, this.repoService, this.properties, this.scmService);
         impl.onReceive(context, refChanges, null);
     }
 
@@ -53,7 +57,7 @@ public class ExternalAsyncPostReceiveHook
         Repository repository
     ) {
         ExternalPreReceiveHook impl = new ExternalPreReceiveHook(this.authCtx,
-            this.permissions, this.repoService, this.properties);
+            this.permissions, this.repoService, this.properties, this.scmService);
         impl.validate(settings, errors, repository);
     }
 }
